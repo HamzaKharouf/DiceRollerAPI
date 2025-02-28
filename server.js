@@ -1,41 +1,38 @@
-const express = require("express");
-const cors = require("cors");
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
-// Allowed origins (replace with your actual static site URL)
-const allowedOrigins = ["https://your-static-site-url"];
+app.use(
+    cors({
+        origin: "*" || "https://localhost:3000",
+        methods: ['GET', 'POST', 'PUT', 'DELETE']
+    })
+);
 
-app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("CORS not allowed"));
-        }
-    }
-}));
+app.use(express.json());
 
-// Dice Roller API: Returns a random number (1-6)
-app.get("/roll", (req, res) => {
-    const roll = Math.floor(Math.random() * 6) + 1;
-    res.json({ result: roll });
+app.use(express.static('public'));
+
+app.get('/roll', (req, res) => {
+  const sides = parseInt(req.query.sides) || 6;
+  const result = Math.floor(Math.random() * sides) + 1;
+  res.json({ roll: result });
 });
 
-// Wake-up API to prevent Azure cold start issues
-app.get("/wake", (req, res) => {
-    res.send("Server is awake!");
+app.get('/roll-fail', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://unauthorized-site.com');
+  const sides = parseInt(req.query.sides) || 6;
+  const result = Math.floor(Math.random() * sides) + 1;
+  res.json({ roll: result });
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-    if (err.message === "CORS not allowed") {
-        res.status(403).json({ error: "CORS Error: This site is not allowed to access the API" });
-    } else {
-        res.status(500).json({ error: "Internal Server Error" });
-    }
+app.get('/', (req, res) => {
+  res.send('Dice Roller API is running. Use /roll or /roll-fail endpoints.');
 });
 
-// Start the server
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
