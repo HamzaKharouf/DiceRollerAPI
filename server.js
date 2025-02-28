@@ -1,36 +1,17 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express");
+const cors = require("cors");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
-// Enable CORS globally for all routes
-app.use(cors({ origin: '*' }));
+// Allow CORS (except in the failure condition later)
+app.use(cors());
 
-// Parse JSON requests (important for handling POST requests properly)
-app.use(express.json());
-
-// Successful roll endpoint
-app.get('/roll', (req, res) => {
-  const sides = parseInt(req.query.sides) || 6;
-  const result = Math.floor(Math.random() * sides) + 1;
-  res.json({ roll: result });
+// Dice Roller API: Roll a dice (1-6)
+app.get("/roll", (req, res) => {
+  const roll = Math.floor(Math.random() * 6) + 1;
+  res.json({ result: roll });
 });
 
-// Roll endpoint with simulated CORS failure (if needed)
-app.get('/roll-fail', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://unauthorized-site.com');
-  const sides = parseInt(req.query.sides) || 6;
-  const result = Math.floor(Math.random() * sides) + 1;
-  res.json({ roll: result });
-});
-
-// Root route
-app.get('/', (req, res) => {
-  res.send('Dice Roller API is running. Use /roll or /roll-fail endpoints.');
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// Start the server
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
